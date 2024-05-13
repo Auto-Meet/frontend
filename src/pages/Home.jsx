@@ -89,7 +89,7 @@ const Home = () => {
         <RBox>
           <ClickBox
             onClick={() => {
-              navigate("/create");
+              navigate("/createRoom");
             }}
           >
             <EmptyBox style={{ height: "18vh" }} />
