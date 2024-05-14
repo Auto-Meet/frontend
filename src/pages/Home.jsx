@@ -115,7 +115,11 @@ const Home = () => {
               />
             </div>
           </ClickBox>
-          <ClickBox>
+          <ClickBox
+            onClick={() => {
+              navigate("/joinRoom");
+            }}
+          >
             <EmptyBox style={{ height: "18vh" }} />
             <img
               src={`${process.env.PUBLIC_URL}/imgs/join.svg`}
