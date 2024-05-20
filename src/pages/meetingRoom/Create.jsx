@@ -111,7 +111,7 @@ const Create = () => {
             해당 회의방으로 입장 가능합니다.
           </p>
           <SubmitBtn type="submit" value="회의방 개설">
-            회의방 입장
+            회의방 개설
           </SubmitBtn>
         </form>
       </Box>
