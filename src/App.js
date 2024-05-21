@@ -5,7 +5,8 @@ import Home from "./pages/Home.jsx";
 import Room from "./pages/meetingRoom/Room.jsx";
 import Create from "./pages/meetingRoom/Create.jsx";
 import Join from "./pages/meetingRoom/Join.jsx";
-import Record from "./pages/Record.jsx";
+import Record from "./pages/meetingRecord/Records.jsx";
+import RecordDetail from "./pages/meetingRecord/RecordDetail.jsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/createRoom" element={<Create />} />
             <Route path="/joinRoom" element={<Join />} />
             <Route path="/meetingRecord" element={<Record />} />
+            <Route path="/meetingRecordDetail" element={<RecordDetail />} />
           </Routes>
         </BrowserRouter>
       </div>
