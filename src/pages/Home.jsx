@@ -147,7 +147,11 @@ const Home = () => {
 
         <LBox>
           <RowBox>
-            <ClickMBox>
+            <ClickMBox
+              onClick={() => {
+                navigate("/meetingRecord");
+              }}
+            >
               <EmptyBox style={{ height: "7vh" }} />
               <img
                 src={`${process.env.PUBLIC_URL}/imgs/letters.svg`}
