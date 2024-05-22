@@ -108,7 +108,7 @@ const Login = () => {
           confirmButtonText: "확인",
           confirmButtonColor: "#1f316f",
         });
-        navigate("/home");
+        navigate("/");
       })
       .catch((err) => {
         console.log(err);
