@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 
 //style
 const Logo = styled.p`
@@ -51,6 +53,9 @@ const SignUp = styled.p`
   margin-right: 17%;
   margin-bottom: 13%;
   text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Noto Sans KR", sans-serif;
   cursor: pointer;
 `;
 
@@ -87,6 +92,34 @@ const Login = () => {
       passwordInput.current.focus();
       return;
     }
+
+    axios
+      .post(`/login`, {
+        email: state.email,
+        password: state.password,
+      })
+      .then((res) => {
+        localStorage.removeItem("token");
+        localStorage.setItem("token", res.headers.authorization);
+
+        Swal.fire({
+          text: "환영합니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+          confirmButtonColor: "#1f316f",
+        });
+        navigate("/home");
+      })
+      .catch((err) => {
+        console.log(err);
+        Swal.fire({
+          title: "로그인 실패",
+          text: "회원정보가 존재하지 않습니다.",
+          icon: "error",
+          confirmButtonText: "확인",
+          confirmButtonColor: "#1f316f",
+        });
+      });
   };
 
   const moveToSignUp = () => {
