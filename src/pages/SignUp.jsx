@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 //style
 const Logo = styled.p`
@@ -51,7 +53,7 @@ const SubmitBtn = styled.button`
   font-weight: 600;
   width: 100%;
   margin-top: 4%;
-  margin-bottom: 4%;
+  margin-bottom: 7%;
 
   padding-top: 2.5%;
   padding-bottom: 2.5%;
@@ -69,7 +71,7 @@ const SignUp = () => {
     email: "",
     password: "",
     name: "",
-    age: "",
+    age: 0,
     check: false,
   });
 
@@ -106,6 +108,34 @@ const SignUp = () => {
       ageInput.current.focus();
       return;
     }
+
+    console.log(state);
+    axios
+      .post(`/api/user/join`, {
+        email: state.email,
+        password: state.password,
+        name: state.name,
+        age: Number(state.age),
+      })
+      .then((res) => {
+        localStorage.setItem("name", res.data.name);
+        Swal.fire({
+          text: "회원가입이 완료되었습니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+          confirmButtonColor: "#1f316f",
+        });
+        navigate("/login");
+      })
+      .catch((err) => {
+        Swal.fire({
+          title: "회원가입 실패",
+          text: err.response.data.message,
+          icon: "error",
+          confirmButtonText: "확인",
+          confirmButtonColor: "#1f316f",
+        });
+      });
   };
 
   return (
