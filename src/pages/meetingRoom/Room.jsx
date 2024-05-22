@@ -39,6 +39,8 @@ const Room = () => {
   const [currentVideoDevice, setCurrentVideoDevice] = useState(null);
 
   const OV = useRef(new OpenVidu()); //초기값 : openVidu객체. {current: 초기값} 객체 형태로 반환. 다시 렌더링될때마다 초기화되지 않고, 생성된 값을 계속 사용한다.
+  const mediaRecorderRef = useRef(null); // MediaRecorder 참조
+  const recordedChunksRef = useRef([]); // 녹화된 데이터 저장
 
   //mount시에 session 생성 및 token생성 진행
   useEffect(() => {
@@ -102,7 +104,8 @@ const Room = () => {
           setPublisher(publisher);
           setCurrentVideoDevice(currentVideoDevice);
 
-          //영상 및 음성 자동 녹음 시작.
+          // 녹화 시작
+          startRecording(publisher.stream.getMediaStream());
         } catch (error) {
           console.log(
             "There was an error connecting to the session:",
@@ -114,7 +117,41 @@ const Room = () => {
     }
   }, [session, myUserName]);
 
+  const startRecording = (stream) => {
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (event) => {
+      //데이터가 사용가능할 때마다 발생한다.
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+    mediaRecorder.start(); //녹화 시작
+    mediaRecorderRef.current = mediaRecorder; //녹화 시작을 기준으로, 해당 mediaRecorder을 mediaRecorderRef에 저장한다.
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop(); //mediaRecorder을 중지
+      mediaRecorderRef.current.onstop = () => {
+        //onstop 이벤트핸들러. 녹화가 완전히 중지된 후 실행되므로, 현재 모든 데이터가 수집된 상태.
+        const blob = new Blob(recordedChunksRef.current, {
+          type: "video/mp4",
+        });
+        const url = URL.createObjectURL(blob); //URL으로 변환
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "recorded_session.mp4";
+        document.body.appendChild(link); //다운로드 파일의 이름을 지정한다.
+        link.click(); //브라우저 사에서 링크를 클릭하여 파일 다운로드를 시작
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url); //URL객체를 해제
+        recordedChunksRef.current = [];
+      };
+    }
+  };
+
   const leaveSession = useCallback(() => {
+    stopRecording();
     if (session) {
       session.disconnect(); //session연결 해제
     }
