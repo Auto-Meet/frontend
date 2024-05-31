@@ -100,7 +100,7 @@ const Login = () => {
       })
       .then((res) => {
         localStorage.removeItem("token");
-        localStorage.setItem("token", res.headers.authorization);
+        localStorage.setItem("token", res.headers["access-token"]);
 
         Swal.fire({
           text: "환영합니다.",
