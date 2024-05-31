@@ -66,6 +66,7 @@ const SignUp = () => {
   const passwordInput = useRef();
   const nameInput = useRef();
   const ageInput = useRef();
+  const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
 
   const [state, setState] = useState({
     email: "",
@@ -111,7 +112,7 @@ const SignUp = () => {
 
     console.log(state);
     axios
-      .post(`/api/user/join`, {
+      .post(`${PROXY}/api/user/join`, {
         email: state.email,
         password: state.password,
         name: state.name,

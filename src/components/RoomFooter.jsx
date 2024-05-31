@@ -14,6 +14,12 @@ const Box = styled.div`
   justify-content: space-between;
 `;
 
+const FBox = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100vw;
+`;
+
 const MBox = styled.div`
   display: flex;
   align-items: center;
@@ -25,6 +31,25 @@ const Logo = styled.p`
   font-size: 25px;
   font-weight: 600;
   margin-left: 4vw;
+  margin-right: 4vw;
+`;
+
+const RecordBtn = styled.div`
+  color: white;
+  font-size: 18px;
+  background: linear-gradient(
+    90deg,
+    #3274d6 0%,
+    #3172d3 0.01%,
+    #005be3 99.98%,
+    #bccee8 99.99%
+  );
+  border-radius: 25px;
+  padding-top: 0.5%;
+  padding-bottom: 0.8%;
+  padding-left: 1.7%;
+  padding-right: 1.7%;
+  cursor: pointer;
 `;
 
 const Circle = styled.img`
@@ -74,7 +99,10 @@ const RoomFooter = ({ leaveSession, camOff, camOn, voiceOff, voiceOn }) => {
   return (
     <>
       <Box>
-        <Logo>AUTOMEET</Logo>
+        <FBox>
+          <Logo>AUTOMEET</Logo>
+          <RecordBtn>✨AI 회의록 생성하기</RecordBtn>
+        </FBox>
 
         <MBox>
           <Circle

@@ -63,6 +63,7 @@ const Login = () => {
   const navigate = useNavigate();
   const emailInput = useRef();
   const passwordInput = useRef();
+  const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
 
   const [state, setState] = useState({
     email: "",
@@ -94,13 +95,13 @@ const Login = () => {
     }
 
     axios
-      .post(`/login`, {
+      .post(`${PROXY}/login`, {
         email: state.email,
         password: state.password,
       })
       .then((res) => {
         localStorage.removeItem("token");
-        localStorage.setItem("token", res.headers.authorization);
+        localStorage.setItem("token", res.headers["access-token"]);
 
         Swal.fire({
           text: "환영합니다.",
