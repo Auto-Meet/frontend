@@ -24,9 +24,6 @@ const EmtyUnderBox = styled.div`
 
 const VideoBox = styled.div``;
 
-//URL
-const APPLICATION_SERVER_URL = "http://43.200.237.37:8080";
-
 const Room = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,6 +36,9 @@ const Room = () => {
   const [publisher, setPublisher] = useState(undefined); //발행자
   const [subscribers, setSubscribers] = useState([]); //참가자들
   const [currentVideoDevice, setCurrentVideoDevice] = useState(null);
+
+  const APPLICATION_SERVER_URL = "http://43.200.237.37:8080";
+  const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
 
   const OV = useRef(new OpenVidu()); //초기값 : openVidu객체. {current: 초기값} 객체 형태로 반환. 다시 렌더링될때마다 초기화되지 않고, 생성된 값을 계속 사용한다.
   const mediaRecorderRef = useRef(null); // MediaRecorder 참조
@@ -153,7 +153,7 @@ const Room = () => {
     console.log(title);
     try {
       const response = await axios.post(
-        `/api/sessions`,
+        `${PROXY}/api/sessions`,
         { meetingId: sessionId, password: sessionPw, meetingTitle: title },
         {
           headers: {
@@ -178,7 +178,7 @@ const Room = () => {
 
     try {
       const response = await axios.post(
-        `/api/sessions/connection`,
+        `${PROXY}/api/sessions/connection`,
         { meetingId: id, password: pw },
         {
           headers: {

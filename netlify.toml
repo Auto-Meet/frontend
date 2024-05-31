@@ -1,0 +1,11 @@
+[[redirects]]
+from = "/proxy/*"
+to = "http://43.200.237.37:8080/:splat"  
+status = 200
+force = true
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+force = false
