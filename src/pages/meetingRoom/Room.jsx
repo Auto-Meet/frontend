@@ -141,7 +141,7 @@ const Room = () => {
     }
 
     //참여자인 경우
-    if (!localStorage.getItem("participant")) {
+    if (localStorage.getItem("participant")) {
       return createToken(mySessionId, mySessionPW);
     }
   }, [mySessionId]);
@@ -243,6 +243,7 @@ const Room = () => {
     setMainStreamManager(undefined);
     setPublisher(undefined);
     localStorage.removeItem("owner");
+    localStorage.removeItem("participant");
     navigate("/");
   }, [session]); //session값이 변경되었을 경우에만, 해당 함수를 다시 선언하고, 그 이전까지는 계속 재사용한다.
 
