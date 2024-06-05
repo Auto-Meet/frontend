@@ -37,13 +37,10 @@ const Logo = styled.p`
 const RecordBtn = styled.div`
   color: white;
   font-size: 18px;
-  background: linear-gradient(
-    90deg,
-    #3274d6 0%,
-    #3172d3 0.01%,
-    #005be3 99.98%,
-    #bccee8 99.99%
-  );
+  background-image: ${({ state }) =>
+    state
+      ? `linear-gradient(90deg, #E26D6D 0.01%, #F42B2B 99.98%)`
+      : `linear-gradient(90deg,#3172d3 0.01%,#005be3 99.98%,#bccee8 99.99%)`};
   border-radius: 25px;
   padding-top: 0.5%;
   padding-bottom: 0.8%;
@@ -70,9 +67,18 @@ const OffBtn = styled.img`
   cursor: pointer;
 `;
 
-const RoomFooter = ({ leaveSession, camOff, camOn, voiceOff, voiceOn }) => {
+const RoomFooter = ({
+  voiceOff,
+  voiceOn,
+  camOff,
+  camOn,
+  leaveSession,
+  allRecord,
+  allStopRecord,
+}) => {
   const [cam, setCam] = useState(true); //false: OFF, true: ON
   const [voice, setVoice] = useState(true); //false: OFF, true: ON
+  const [record, setRecord] = useState(false); //false: 녹화 전 혹은 종료됨, true: 녹화 중
 
   const camHandle = () => {
     if (cam) {
@@ -96,12 +102,26 @@ const RoomFooter = ({ leaveSession, camOff, camOn, voiceOff, voiceOn }) => {
     }
   };
 
+  const meetingRecordHandle = () => {
+    console.log("버튼클릭!");
+    if (!record) {
+      //전체 녹화가 진행중이지 않은 경우
+      allRecord();
+      setRecord(true);
+    } else {
+      allStopRecord();
+      setRecord(false);
+    }
+  };
+
   return (
     <>
       <Box>
         <FBox>
           <Logo>AUTOMEET</Logo>
-          <RecordBtn>✨AI 회의록 생성하기</RecordBtn>
+          <RecordBtn state={record} onClick={meetingRecordHandle}>
+            {record ? "🔴 AI 회의록 중지하기" : "✨ AI 회의록 생성하기"}
+          </RecordBtn>
         </FBox>
 
         <MBox>
