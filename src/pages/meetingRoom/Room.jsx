@@ -38,6 +38,7 @@ const Room = () => {
   const [publisher, setPublisher] = useState(undefined); //발행자
   const [subscribers, setSubscribers] = useState([]); //참가자들
   const [currentVideoDevice, setCurrentVideoDevice] = useState(null);
+  const [sId, setSid] = useState(null);
   const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
 
   const OV = useRef(new OpenVidu()); //초기값 : openVidu객체. {current: 초기값} 객체 형태로 반환. 다시 렌더링될때마다 초기화되지 않고, 생성된 값을 계속 사용한다.
@@ -52,6 +53,12 @@ const Room = () => {
   참여자 : "/api/sessions/connection" -> token
   = 최종 token값으로 session.connection(token,유저네임) 실행
   */
+
+  useEffect(() => {
+    if (sId) {
+      console.log("sId updated:", sId);
+    }
+  }, [sId]);
 
   //webcam으로 촬영한 파일을 mp4, wav파일로 변환
   const ffmpeg = useRef(createFFmpeg({ log: true }));
@@ -259,8 +266,8 @@ const Room = () => {
         const audioFormData = new FormData();
         audioFormData.append("file", audioBlob);
         try {
-          const id = localStorage.getItem("shareId");
-          await axios.post(`/api/meet/${id}/audio_analysis`, audioFormData, {
+          console.log("공유받은 id: ", sId);
+          await axios.post(`/api/meet/${sId}/audio_analysis`, audioFormData, {
             headers: {
               "Access-token": localStorage.getItem("token"),
               "Content-Type": "multipart/form-data",
@@ -274,8 +281,8 @@ const Room = () => {
         const videoFormData = new FormData();
         videoFormData.append("file", videoBlob);
         try {
-          const id = localStorage.getItem("shareId");
-          await axios.post(`/api/meet/${id}/video_analysis`, videoFormData, {
+          console.log("공유받은 id: ", sId);
+          await axios.post(`/api/meet/${sId}/video_analysis`, videoFormData, {
             headers: {
               "Access-token": localStorage.getItem("token"),
               "Content-Type": "multipart/form-data",
@@ -410,7 +417,12 @@ const Room = () => {
             })
             .then((res) => {
               console.log(res.data);
-              localStorage.setItem("shareId", res.data.meetingId);
+
+              setTimeout(() => {
+                const shareId = localStorage.getItem("shareId");
+                setSid(shareId);
+                console.log("shareId from localStorage:", shareId);
+              }, 0);
             });
           console.log("서버에게 전체 음성파일 전송 성공!");
         } catch (error) {
