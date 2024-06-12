@@ -69,6 +69,11 @@ const Room = () => {
   }, []);
 
   useEffect(() => {
+    // 컴포넌트가 마운트될 때 FFmpeg 로드
+    loadFFmpeg();
+  }, [loadFFmpeg]);
+
+  useEffect(() => {
     if (!session) joinSession();
   }, []);
 
@@ -215,7 +220,9 @@ const Room = () => {
   };
 
   // 개인 녹화 및 녹음시작
-  const startRecording = (stream) => {
+  const startRecording = async (stream) => {
+    await loadFFmpeg();
+
     const options = { mimeType: 'video/webm; codecs="vp9, opus"' };
     const mediaRecorder = new MediaRecorder(stream, options);
     recordedChunksRef.current = [];
@@ -239,6 +246,8 @@ const Room = () => {
         });
         const arrayBuffer = await blob.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
+
+        await loadFFmpeg();
 
         ffmpeg.current.FS("writeFile", "input.webm", buffer);
 
