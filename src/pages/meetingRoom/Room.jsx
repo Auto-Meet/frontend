@@ -276,12 +276,16 @@ const Room = () => {
         audioFormData.append("file", audioBlob);
         try {
           console.log("공유받은 id: ", sId);
-          await axios.post(`/api/meet/${sId}/audio_analysis`, audioFormData, {
-            headers: {
-              "Access-token": localStorage.getItem("token"),
-              "Content-Type": "multipart/form-data",
-            },
-          });
+          await axios.post(
+            `${PROXY}/api/meet/${sId}/audio_analysis`,
+            audioFormData,
+            {
+              headers: {
+                "Access-token": localStorage.getItem("token"),
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
           console.log("서버에게 음성파일 전송 성공!");
         } catch (error) {
           console.error("음성파일 전송 실패:", error);
@@ -291,12 +295,16 @@ const Room = () => {
         videoFormData.append("file", videoBlob);
         try {
           console.log("공유받은 id: ", sId);
-          await axios.post(`/api/meet/${sId}/video_analysis`, videoFormData, {
-            headers: {
-              "Access-token": localStorage.getItem("token"),
-              "Content-Type": "multipart/form-data",
-            },
-          });
+          await axios.post(
+            `${PROXY}/api/meet/${sId}/video_analysis`,
+            videoFormData,
+            {
+              headers: {
+                "Access-token": localStorage.getItem("token"),
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
           console.log("서버에게 영상파일 전송 성공!");
         } catch (error) {
           console.error("영상파일 전송 실패:", error);
@@ -418,12 +426,16 @@ const Room = () => {
         audioFormData.append("file", audioBlob);
         try {
           await axios
-            .post(`/api/sessions/${mySessionId}/recording`, audioFormData, {
-              headers: {
-                "Access-token": localStorage.getItem("token"),
-                "Content-Type": "multipart/form-data",
-              },
-            })
+            .post(
+              `${PROXY}/api/sessions/${mySessionId}/recording`,
+              audioFormData,
+              {
+                headers: {
+                  "Access-token": localStorage.getItem("token"),
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            )
             .then((res) => {
               console.log(res.data);
 
