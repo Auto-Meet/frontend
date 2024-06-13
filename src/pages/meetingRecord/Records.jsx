@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Logo = styled.h1`
   font-size: 40px;
@@ -39,6 +40,7 @@ const ContentBox = styled.div`
   border-radius: 15px;
   margin-left: 25vw;
   margin-right: 25vw;
+  margin-bottom: 1vh;
   padding-left: 2%;
   padding-right: 2%;
   padding-top: 1.3%;
@@ -60,11 +62,11 @@ const RBox = styled.div`
 `;
 
 const ContentTitle = styled.p`
-  font-size: 18px;
+  font-size: 16px;
 `;
 
 const ContentDate = styled.p`
-  font-size: 18px;
+  font-size: 16px;
 `;
 
 const Content = styled.p`
@@ -74,6 +76,24 @@ const Content = styled.p`
 
 const Record = () => {
   const navigate = useNavigate();
+  const [list, setList] = useState([]);
+  const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
+
+  useEffect(() => {
+    axios
+      .get(`${PROXY}/api/meet`, {
+        headers: {
+          "Access-token": localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        setList(res.data);
+      })
+      .catch((err) => {
+        console.log(err.response);
+      });
+  }, []);
 
   return (
     <>
@@ -91,23 +111,23 @@ const Record = () => {
         <img src={`${process.env.PUBLIC_URL}/imgs/letters.svg`} alt="" />
       </TopBox>
 
-      <ContentBox
-        onClick={() => {
-          navigate("/meetingRecordDetail");
-        }}
-      >
-        <RBox>
-          <ContentTitle>이곳은 제목</ContentTitle>
-          <ContentDate>12:00</ContentDate>
-        </RBox>
+      {list.map((value, index) => (
+        <ContentBox
+          onClick={() => {
+            navigate("/meetingRecordDetail");
+          }}
+        >
+          <RBox>
+            <ContentTitle>{value.title}</ContentTitle>
+            <ContentDate>
+              {value.meetingTime?.split("T")[0]}&nbsp;
+              {value.meetingTime?.split("T")[1]?.split(".")[0]}
+            </ContentDate>
+          </RBox>
 
-        <Content>
-          이곳은 내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-          가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은
-          내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-          가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은
-        </Content>
-      </ContentBox>
+          <Content>{value.content}</Content>
+        </ContentBox>
+      ))}
     </>
   );
 };
