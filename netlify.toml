@@ -1,6 +1,6 @@
 [[redirects]]
 from = "/proxy/*"
-to = "http://43.200.237.37:8080/:splat"  
+to = "http://43.200.237.37:8080/:splat"
 status = 200
 force = true
 
@@ -9,3 +9,9 @@ from = "/*"
 to = "/index.html"
 status = 200
 force = false
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
