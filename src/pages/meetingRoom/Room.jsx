@@ -6,6 +6,8 @@ import UserVideoComponent from "./UserVideoCompoents";
 import RoomFooter from "../../components/RoomFooter";
 import RoomNav from "../../components/RoomNav";
 import styled from "styled-components";
+import Swal from "sweetalert2";
+import { createFFmpeg } from "@ffmpeg/ffmpeg";
 
 //style
 const BackGround = styled.body`
@@ -36,21 +38,40 @@ const Room = () => {
   const [publisher, setPublisher] = useState(undefined); //발행자
   const [subscribers, setSubscribers] = useState([]); //참가자들
   const [currentVideoDevice, setCurrentVideoDevice] = useState(null);
-
-  const APPLICATION_SERVER_URL = "http://43.200.237.37:8080";
+  const [sId, setSid] = useState(null);
   const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
 
   const OV = useRef(new OpenVidu()); //초기값 : openVidu객체. {current: 초기값} 객체 형태로 반환. 다시 렌더링될때마다 초기화되지 않고, 생성된 값을 계속 사용한다.
   const mediaRecorderRef = useRef(null); // MediaRecorder 참조
   const recordedChunksRef = useRef([]); // 녹화된 데이터 저장
+  const allRecorderRef = useRef(null);
+  const allRecordedChunksRef = useRef([]);
 
-  //mount시에 session 생성 및 token생성 진행
   /*
+  < mount시에 session 생성 및 token생성 진행 >
   생성자 : "/api/sessions" -> "/api/sessions/connection" -> token
   참여자 : "/api/sessions/connection" -> token
-
-  최종 token값으로 session.connection(token,유저네임) 실행
+  = 최종 token값으로 session.connection(token,유저네임) 실행
   */
+
+  useEffect(() => {
+    if (sId) {
+      console.log("sId updated:", sId);
+    }
+  }, [sId]);
+
+  //webcam으로 촬영한 파일을 mp4, wav파일로 변환
+  const ffmpeg = useRef(createFFmpeg({ log: true }));
+  const loadFFmpeg = useCallback(async () => {
+    if (!ffmpeg.current.isLoaded()) {
+      await ffmpeg.current.load();
+    }
+  }, []);
+
+  useEffect(() => {
+    // 컴포넌트가 마운트될 때 FFmpeg 로드
+    loadFFmpeg();
+  }, [loadFFmpeg]);
 
   useEffect(() => {
     if (!session) joinSession();
@@ -117,6 +138,8 @@ const Room = () => {
           setPublisher(publisher);
           setCurrentVideoDevice(currentVideoDevice);
 
+          await loadFFmpeg();
+
           // 녹화 시작
           startRecording(publisher.stream.getMediaStream());
         } catch (error) {
@@ -129,7 +152,7 @@ const Room = () => {
         }
       });
     }
-  }, [session, myUserName]);
+  }, [session, myUserName, loadFFmpeg]);
 
   //session연결(생성자) 및 token 생성과정
   const getToken = useCallback(async () => {
@@ -196,41 +219,116 @@ const Room = () => {
     }
   };
 
-  const startRecording = (stream) => {
-    const mediaRecorder = new MediaRecorder(stream);
+  // 개인 녹화 및 녹음시작
+  const startRecording = async (stream) => {
+    await loadFFmpeg();
+
+    const options = { mimeType: 'video/webm; codecs="vp9, opus"' };
+    const mediaRecorder = new MediaRecorder(stream, options);
+    recordedChunksRef.current = [];
+
     mediaRecorder.ondataavailable = (event) => {
-      //데이터가 사용가능할 때마다 발생한다.
       if (event.data.size > 0) {
         recordedChunksRef.current.push(event.data);
       }
     };
-    mediaRecorder.start(); //녹화 시작
-    mediaRecorderRef.current = mediaRecorder; //녹화 시작을 기준으로, 해당 mediaRecorder을 mediaRecorderRef에 저장한다.
+    mediaRecorder.start();
+    mediaRecorderRef.current = mediaRecorder;
   };
 
-  const stopRecording = () => {
+  // 개인 녹화 및 녹음 종료
+  const stopRecording = async () => {
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop(); //mediaRecorder을 중지
-      mediaRecorderRef.current.onstop = () => {
-        //onstop 이벤트핸들러. 녹화가 완전히 중지된 후 실행되므로, 현재 모든 데이터가 수집된 상태.
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.onstop = async () => {
         const blob = new Blob(recordedChunksRef.current, {
-          type: "video/mp4",
+          type: "video/webm",
         });
-        const url = URL.createObjectURL(blob); //URL으로 변환
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "recorded_session.mp4";
-        document.body.appendChild(link); //다운로드 파일의 이름을 지정한다.
-        link.click(); //브라우저 사에서 링크를 클릭하여 파일 다운로드를 시작
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url); //URL객체를 해제
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+
+        await loadFFmpeg();
+
+        ffmpeg.current.FS("writeFile", "input.webm", buffer);
+
+        // mp4로 변환
+        await ffmpeg.current.run("-i", "input.webm", "output.mp4");
+        const videoData = ffmpeg.current.FS("readFile", "output.mp4");
+        const videoBlob = new Blob([videoData.buffer], { type: "video/mp4" });
+
+        // wav로 변환
+        await ffmpeg.current.run("-i", "input.webm", "output.wav");
+        const audioData = ffmpeg.current.FS("readFile", "output.wav");
+        const audioBlob = new Blob([audioData.buffer], { type: "audio/wav" });
+
+        const userName = localStorage.getItem("name");
+
+        downloadBlob(
+          audioBlob,
+          `recorded_${mySessionId}_${userName}_audio.wav`
+        );
+        downloadBlob(
+          videoBlob,
+          `recorded_${mySessionId}_${userName}_video.mp4`
+        );
+
+        const audioFormData = new FormData();
+        audioFormData.append("file", audioBlob);
+        try {
+          console.log("공유받은 id: ", sId);
+          await axios.post(
+            `${PROXY}/api/meet/${sId}/audio_analysis`,
+            audioFormData,
+            {
+              headers: {
+                "Access-token": localStorage.getItem("token"),
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          console.log("서버에게 음성파일 전송 성공!");
+        } catch (error) {
+          console.error("음성파일 전송 실패:", error);
+        }
+
+        const videoFormData = new FormData();
+        videoFormData.append("file", videoBlob);
+        try {
+          console.log("공유받은 id: ", sId);
+          await axios.post(
+            `${PROXY}/api/meet/${sId}/video_analysis`,
+            videoFormData,
+            {
+              headers: {
+                "Access-token": localStorage.getItem("token"),
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          console.log("서버에게 영상파일 전송 성공!");
+        } catch (error) {
+          console.error("영상파일 전송 실패:", error);
+        }
+
         recordedChunksRef.current = [];
       };
     }
   };
 
-  const leaveSession = useCallback(() => {
-    stopRecording();
+  // Blob 객체를 이용하여 파일 다운로드를 수행하는 함수
+  const downloadBlob = (blob, fileName) => {
+    const url = URL.createObjectURL(blob); // Blob URL 생성
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName; // 다운로드 파일 이름 설정
+    document.body.appendChild(link);
+    link.click(); // 가상 클릭 이벤트 발생
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // 생성된 URL 해제
+  };
+
+  const leaveSession = useCallback(async () => {
+    await stopRecording();
     if (session) {
       session.disconnect(); //session연결 해제
     }
@@ -246,6 +344,111 @@ const Room = () => {
     localStorage.removeItem("participant");
     navigate("/");
   }, [session]); //session값이 변경되었을 경우에만, 해당 함수를 다시 선언하고, 그 이전까지는 계속 재사용한다.
+
+  //allRecord toggle(전체회의 녹화)
+  const allRecord = async () => {
+    await startScreenRecording();
+    Swal.fire({
+      text: "AI 자동 회의록 작성을 시작합니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+      confirmButtonColor: "#1f316f",
+    });
+  };
+
+  //전체회의 녹화시작
+  const startScreenRecording = async () => {
+    console.log("전체회의 녹화 시작");
+
+    try {
+      // 화면 스트림 (화면에서 송출되는 소리 포함)
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+
+      // OpenVidu에서 마이크 스트림 가져오기
+      const audioStream = publisher.stream.getMediaStream();
+
+      // 화면 스트림과 마이크 스트림을 결합
+      const combinedStream = new MediaStream([
+        ...screenStream.getVideoTracks(),
+        ...screenStream.getAudioTracks(),
+        ...audioStream.getAudioTracks(),
+      ]);
+
+      const options = { mimeType: 'video/webm; codecs="vp9, opus"' };
+      const allRecorder = new MediaRecorder(combinedStream, options);
+      allRecordedChunksRef.current = [];
+
+      allRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          allRecordedChunksRef.current.push(event.data);
+        }
+      };
+
+      allRecorder.start();
+      allRecorderRef.current = allRecorder;
+    } catch (error) {
+      console.error("화면 녹화 시작 오류:", error);
+    }
+  };
+
+  //allStopRecord toggle(전체회의 녹화 종료)
+  const allStopRecord = () => {
+    console.log("전체회의 녹화 종료");
+
+    if (allRecorderRef.current) {
+      allRecorderRef.current.stop();
+      allRecorderRef.current.onstop = async () => {
+        const blob = new Blob(allRecordedChunksRef.current, {
+          type: "video/webm",
+        });
+
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+
+        ffmpeg.current.FS("writeFile", "input.webm", buffer);
+
+        // wav로 변환
+        await ffmpeg.current.run("-i", "input.webm", "output.wav");
+        const audioData = ffmpeg.current.FS("readFile", "output.wav");
+        const audioBlob = new Blob([audioData.buffer], { type: "audio/wav" });
+
+        const userName = localStorage.getItem("name");
+
+        downloadBlob(
+          audioBlob,
+          `allRecorded_${mySessionId}_${userName}_audio.wav`
+        );
+
+        const audioFormData = new FormData();
+        audioFormData.append("file", audioBlob);
+        try {
+          await axios
+            .post(
+              `${PROXY}/api/sessions/${mySessionId}/recording`,
+              audioFormData,
+              {
+                headers: {
+                  "Access-token": localStorage.getItem("token"),
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            )
+            .then((res) => {
+              const temp = res.data.meetingId;
+              setSid(temp);
+            });
+          console.log("서버에게 전체 음성파일 전송 성공!");
+        } catch (error) {
+          console.error("전체 음성파일 전송 실패:", error);
+        }
+
+        allRecordedChunksRef.current = [];
+      };
+    }
+  };
 
   //camera toggle
   const camOff = useCallback(() => {
@@ -324,6 +527,8 @@ const Room = () => {
               camOff={camOff}
               camOn={camOn}
               leaveSession={leaveSession}
+              allRecord={allRecord}
+              allStopRecord={allStopRecord}
             />
           </VideoBox>
         ) : null}

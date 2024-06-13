@@ -8,4 +8,10 @@ module.exports = function (app) {
       logLevel: "debug", // 디버깅을 위한 로그 레벨 설정
     })
   );
+
+  app.use(function (request, response, next) {
+    response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    response.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
+  });
 };
