@@ -437,10 +437,8 @@ const Room = () => {
               }
             )
             .then((res) => {
-              console.log(res.data);
-              const shareId = localStorage.getItem("shareId");
-              setSid(shareId);
-              console.log("shareId from localStorage:", shareId);
+              const temp = res.data.meetingId;
+              setSid(temp);
             });
           console.log("서버에게 전체 음성파일 전송 성공!");
         } catch (error) {
