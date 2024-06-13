@@ -438,12 +438,9 @@ const Room = () => {
             )
             .then((res) => {
               console.log(res.data);
-
-              setTimeout(() => {
-                const shareId = localStorage.getItem("shareId");
-                setSid(shareId);
-                console.log("shareId from localStorage:", shareId);
-              }, 0);
+              const shareId = localStorage.getItem("shareId");
+              setSid(shareId);
+              console.log("shareId from localStorage:", shareId);
             });
           console.log("서버에게 전체 음성파일 전송 성공!");
         } catch (error) {
