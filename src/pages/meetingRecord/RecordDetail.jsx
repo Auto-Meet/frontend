@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const Logo = styled.h1`
   font-size: 40px;
@@ -48,10 +50,11 @@ const Participants = styled.p`
   margin-left: 0.5vw;
 `;
 
-const ContentTitle = styled.div`
+const ContentTitle = styled.input`
   background: #ffffff;
   border: 1.5px solid #eaebed;
   border-radius: 15px;
+  width: 45vw;
   margin-left: 25vw;
   margin-right: 25vw;
   margin-bottom: 3vh;
@@ -59,14 +62,16 @@ const ContentTitle = styled.div`
   padding-right: 2%;
   padding-top: 1.2%;
   padding-bottom: 1.2%;
-
   font-size: 18px;
+  font-family: "BMJUA";
 `;
 
-const Content = styled.div`
+const Content = styled.textarea`
   background: #ffffff;
   border: 1.5px solid #eaebed;
   border-radius: 15px;
+
+  width: 45vw;
   margin-left: 25vw;
   margin-right: 25vw;
   padding-left: 2%;
@@ -75,6 +80,7 @@ const Content = styled.div`
   padding-bottom: 1.2%;
 
   font-size: 18px;
+  font-family: "BMJUA";
 `;
 
 const Btn = styled.div`
@@ -127,10 +133,97 @@ const FooterEmty = styled.div`
 `;
 
 const RecordDetail = () => {
+  const [dataCheck, setDataCheck] = useState({
+    title: false,
+    content: false,
+  });
+  const [data, setData] = useState({});
+  const titleInput = useRef();
+  const contentInput = useRef();
+
+  const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
+  const meetingId = localStorage.getItem("meetingId");
+
+  useEffect(() => {
+    axios
+      .get(`${PROXY}/api/meet/66630a87f9e17f5280e1dfba`, {
+        headers: {
+          "Access-token": localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setData(res.data);
+      });
+  }, []);
+
+  const handleTitle = (title) => {
+    setData({ ...data, title: title });
+    setDataCheck({ ...dataCheck, title: true });
+  };
+
+  const handleContent = (content) => {
+    setData({ ...data, content: content });
+    setDataCheck({ ...dataCheck, content: true });
+  };
+
+  const handleRecordEdit = () => {
+    if (data.title?.length < 1 || data.title?.length > 30) {
+      titleInput.current.focus();
+      return;
+    }
+
+    if (data.content?.length < 1) {
+      contentInput.current.focus();
+      return;
+    }
+
+    let title = null;
+    let content = null;
+
+    if (dataCheck.title || dataCheck.content) {
+      title = data.title;
+      content = data.content;
+    } else {
+      Swal.fire({
+        text: "변경사항이 없습니다.",
+        icon: "warning",
+        confirmButtonText: "확인",
+        confirmButtonColor: "#1f316f",
+      });
+
+      return;
+    }
+
+    axios
+      .patch(
+        `${PROXY}/api/meet/66630a87f9e17f5280e1dfba`,
+        {
+          title: title,
+          content: content,
+        },
+        {
+          headers: {
+            "Access-token": localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(() => {
+        Swal.fire({
+          text: "수정이 완료되었습니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+          confirmButtonColor: "#1f316f",
+        });
+      })
+      .catch((err) => console.log(err.response));
+  };
+
   return (
     <>
       <Logo>AUTOMEET</Logo>
-
       <TopBox>
         <TitleBox>
           <Title>회의록 목록</Title>
@@ -142,35 +235,34 @@ const RecordDetail = () => {
         </TitleBox>
         <img src={`${process.env.PUBLIC_URL}/imgs/letters.svg`} alt="" />
       </TopBox>
-
-      <Date>2024-05-21</Date>
-
+      <Date>
+        {data.meetingTime?.split("T")[0]}&nbsp;
+        {data.meetingTime?.split("T")[1]?.split(".")[0]}
+      </Date>
       <Row>
         <img src={`${process.env.PUBLIC_URL}/imgs/profile.svg`} alt="" />
-        <Participants>홍길동 외 4명</Participants>
+        <Participants>{data.userNames?.join(" ")}</Participants>
       </Row>
+      <ContentTitle
+        ref={titleInput}
+        value={data.title}
+        placeholder="이곳에 회의제목을 입력해주세요."
+        onChange={(e) => handleTitle(e.target.value)}
+      />
 
-      <ContentTitle>
-        이번 회의 제목은 점심 메뉴를 무엇을 먹을지에 대해서 고민을 해보겠어요
-      </ContentTitle>
+      <Content
+        ref={contentInput}
+        value={data.content}
+        placeholder="이곳에 회의내용을 입력해주세요."
+        onChange={(e) => handleContent(e.target.value)}
+      />
 
-      <Content>
-        이곳은 내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-        가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은
-        내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-        가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은이곳은
-        내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-        가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은
-        내용보여지는곳. 가나다라마바사.이곳은 내용보여지는곳.
-        가나다라마바사.이곳은 내용보여지는곳. 가나다라마바사. 이곳은
-      </Content>
+      <Btn onClick={handleRecordEdit}>수정하기</Btn>
 
-      <Btn>수정하기</Btn>
       <FeedBackTitle>회의록 피드백</FeedBackTitle>
       <FeedBackSubTitle>
         지난 회의에 대해서 중요한 사항이나 이외에 피드백들을 이곳에 적어주세요.
       </FeedBackSubTitle>
-
       <TextInput placeholder="피드백 작성 완료 시, 수정 불가능합니다." />
       <Btn>작성하기</Btn>
       <FooterEmty />
