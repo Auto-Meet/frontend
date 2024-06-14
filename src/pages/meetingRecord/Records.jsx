@@ -7,8 +7,10 @@ const Logo = styled.h1`
   font-size: 40px;
   color: #112d4e;
   margin-top: 10vh;
-  margin-bottom: 5vh;
+  margin-bottom: 3vh;
   margin-left: 25vw;
+
+  cursor: pointer;
 `;
 
 const TopBox = styled.div`
@@ -97,7 +99,13 @@ const Record = () => {
 
   return (
     <>
-      <Logo>AUTOMEET</Logo>
+      <Logo
+        onClick={() => {
+          navigate("/");
+        }}
+      >
+        AUTOMEET
+      </Logo>
 
       <TopBox>
         <TitleBox>

@@ -2,13 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Logo = styled.h1`
   font-size: 40px;
   color: #112d4e;
   margin-top: 10vh;
-  margin-bottom: 5vh;
+  margin-bottom: 3vh;
   margin-left: 25vw;
+
+  cursor: pointer;
 `;
 
 const TopBox = styled.div`
@@ -185,8 +188,9 @@ const RecordDetail = () => {
   const contentInput = useRef();
   const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
   const meetingId = localStorage.getItem("meetingId");
+  const navigate = useNavigate();
+
   let emtionResult = "";
-  let AttentionResult = "";
 
   useEffect(() => {
     axios
@@ -275,7 +279,13 @@ const RecordDetail = () => {
 
   return (
     <>
-      <Logo>AUTOMEET</Logo>
+      <Logo
+        onClick={() => {
+          navigate("/");
+        }}
+      >
+        AUTOMEET
+      </Logo>
       <TopBox>
         <TitleBox>
           <Title>회의록 목록</Title>
