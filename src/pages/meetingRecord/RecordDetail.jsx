@@ -31,7 +31,7 @@ const Title = styled.p`
 const SubTitle = styled.p`
   font-size: 18px;
   color: #6f6f6f;
-  margin-right: 4vw;
+  margin-right: 2vw;
 `;
 
 const Date = styled.p`
@@ -99,12 +99,55 @@ const Btn = styled.div`
   cursor: pointer;
 `;
 
+const ScoreResultTitle = styled.h1`
+  font-size: 30px;
+  color: #112d4e;
+  text-align: center;
+  margin-top: 13vh;
+  margin-bottom: 0.5vh;
+`;
+
+const ScoreResultSubTitle = styled.p`
+  font-size: 18px;
+  color: #6f6f6f;
+  text-align: center;
+  margin-bottom: 2vh;
+`;
+
 const FeedBackTitle = styled.h1`
   font-size: 30px;
   color: #112d4e;
   text-align: center;
   margin-top: 13vh;
   margin-bottom: 0.5vh;
+`;
+
+const ScoreFlex = styled.div`
+  display: flex;
+  margin-left: 25vw;
+`;
+
+const ScoreBox = styled.div`
+  background: #ffffff;
+  border: 1.5px solid #eaebed;
+  border-radius: 15px;
+
+  width: 21.8vw;
+  height: 32vh;
+  padding-top: 1.8%;
+  padding-left: 1.5%;
+  padding-right: 1.5%;
+`;
+
+const ScoreTitle = styled.p`
+  font-size: 25px;
+
+  color: #112d4e;
+`;
+
+const SocreText = styled.div`
+  font-size: 20px;
+  text-align: center;
 `;
 
 const FeedBackSubTitle = styled.p`
@@ -140,9 +183,10 @@ const RecordDetail = () => {
   const [data, setData] = useState({});
   const titleInput = useRef();
   const contentInput = useRef();
-
   const PROXY = window.location.hostname === "localhost" ? "" : "/proxy";
   const meetingId = localStorage.getItem("meetingId");
+  let emtionResult = "";
+  let AttentionResult = "";
 
   useEffect(() => {
     axios
@@ -155,6 +199,14 @@ const RecordDetail = () => {
       .then((res) => {
         console.log(res.data);
         setData(res.data);
+
+        if (res.data.userAnalysis.sentimentScore) {
+          let score = res.data.userAnalysis.sentimentScore;
+          if (score >= 80) emtionResult = "";
+          if (50 <= score < 80) emtionResult = "중간값";
+        }
+
+        console.log(emtionResult);
       });
   }, []);
 
@@ -228,7 +280,8 @@ const RecordDetail = () => {
         <TitleBox>
           <Title>회의록 목록</Title>
           <SubTitle>
-            지난 회의에서 자동으로 작성된 회의록을 확인해보세요.
+            지난 회의에서 자동으로 작성된 회의록과 회의 분위기 분석결과를
+            확인해보세요.
             <br />
             직접 수정 및 삭제 가능합니다.
           </SubTitle>
@@ -258,6 +311,41 @@ const RecordDetail = () => {
       />
 
       <Btn onClick={handleRecordEdit}>수정하기</Btn>
+
+      <ScoreResultTitle>회의 분위기 분석 결과</ScoreResultTitle>
+      <ScoreResultSubTitle>
+        지난 회의에서 나의 감정과 집중도를 분석한 결과를 확인해보세요.
+      </ScoreResultSubTitle>
+      <ScoreFlex>
+        <ScoreBox style={{ marginRight: "1vw" }}>
+          <ScoreTitle style={{ marginBottom: "20%" }}>
+            나의 감정 점수
+          </ScoreTitle>
+          <img
+            src={`${process.env.PUBLIC_URL}/imgs/emotion.svg`}
+            alt=""
+            style={{ marginLeft: "23%", width: "55%" }}
+          />
+          <SocreText style={{ marginTop: "5%" }}>
+            {data.userAnalysis?.sentimentScore}
+            <span style={{ color: "#BCBCBC" }}>/100</span>
+          </SocreText>
+        </ScoreBox>
+        <ScoreBox>
+          <ScoreTitle style={{ marginBottom: "11%" }}>
+            나의 집중도 점수
+          </ScoreTitle>
+          <img
+            src={`${process.env.PUBLIC_URL}/imgs/target.svg`}
+            alt=""
+            style={{ marginLeft: "31%", width: "33%" }}
+          />
+          <SocreText style={{ marginTop: "1%" }}>
+            {data.userAnalysis?.concentrationScore}
+            <span style={{ color: "#BCBCBC" }}>/100</span>
+          </SocreText>
+        </ScoreBox>
+      </ScoreFlex>
 
       <FeedBackTitle>회의록 피드백</FeedBackTitle>
       <FeedBackSubTitle>
