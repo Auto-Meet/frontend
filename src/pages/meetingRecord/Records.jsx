@@ -31,7 +31,7 @@ const Title = styled.p`
 const SubTitle = styled.p`
   font-size: 18px;
   color: #6f6f6f;
-  margin-right: 4vw;
+  margin-right: 2vw;
 `;
 
 const ContentBox = styled.div`
@@ -103,7 +103,8 @@ const Record = () => {
         <TitleBox>
           <Title>회의록 목록</Title>
           <SubTitle>
-            지난 회의에서 자동으로 작성된 회의록을 확인해보세요.
+            지난 회의에서 자동으로 작성된 회의록과 회의 분위기 분석결과를
+            확인해보세요.
             <br />
             직접 수정 및 삭제 가능합니다.
           </SubTitle>
