@@ -24,7 +24,17 @@ const EmtyUnderBox = styled.div`
   margin-bottom: 8vh;
 `;
 
-const VideoBox = styled.div``;
+const VideoBox = styled.div`
+  margin-left: 0.5vw;
+  margin-right: 0.5vw;
+  margin-top: 10vh;
+`;
+
+const Vstyle = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
 
 const Room = () => {
   const navigate = useNavigate();
@@ -114,7 +124,7 @@ const Room = () => {
             videoSource: undefined,
             publishAudio: true,
             publishVideo: true,
-            resolution: "640x480",
+            resolution: "540x480",
             frameRate: 30,
             insertMode: "APPEND",
             mirror: true,
@@ -503,23 +513,23 @@ const Room = () => {
   return (
     <>
       <BackGround>
+        <RoomNav sessionId={mySessionId} />
+        <EmtyBox />
         {session !== undefined ? (
-          <VideoBox>
-            <RoomNav sessionId={mySessionId} />
-            <EmtyBox />
+          <Vstyle>
             {mainStreamManager !== undefined ? (
-              <div>
+              <VideoBox>
                 <UserVideoComponent streamManager={mainStreamManager} />
-              </div>
+              </VideoBox>
             ) : null}
-            <div>
-              {subscribers.map((sub, i) => (
-                <div key={sub.id}>
-                  <span>{sub.id}</span>
-                  <UserVideoComponent streamManager={sub} />
-                </div>
-              ))}
-            </div>
+
+            {subscribers.map((sub, i) => (
+              <VideoBox key={sub.id}>
+                <span>{sub.id}</span>
+                <UserVideoComponent streamManager={sub} />
+              </VideoBox>
+            ))}
+
             <EmtyUnderBox />
             <RoomFooter
               voiceOff={voiceOff}
@@ -530,7 +540,7 @@ const Room = () => {
               allRecord={allRecord}
               allStopRecord={allStopRecord}
             />
-          </VideoBox>
+          </Vstyle>
         ) : null}
       </BackGround>
     </>
