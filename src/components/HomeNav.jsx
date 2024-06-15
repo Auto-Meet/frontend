@@ -88,7 +88,7 @@ const HomeNav = () => {
       <Box>
         <LBox>
           <Logo>AUTOMEET</Logo>
-          <SideLogo>새로운 멀티 플렛폼 회상회의 서비스</SideLogo>
+          <SideLogo>화상회의에 새로움을 더하다.</SideLogo>
         </LBox>
         <Empty />
         <RBox>
