@@ -367,6 +367,7 @@ const Room = () => {
   };
 
   //전체회의 녹화시작
+  //전체회의 녹화시작
   const startScreenRecording = async () => {
     console.log("전체회의 녹화 시작");
 
@@ -380,11 +381,21 @@ const Room = () => {
       // OpenVidu에서 마이크 스트림 가져오기
       const audioStream = publisher.stream.getMediaStream();
 
-      // 화면 스트림과 마이크 스트림을 결합
+      // 참가자들의 오디오 스트림 결합
+      const audioTracks = [];
+      subscribers.forEach((subscriber) => {
+        const subAudioTracks = subscriber.stream
+          .getMediaStream()
+          .getAudioTracks();
+        audioTracks.push(...subAudioTracks);
+      });
+
+      // 화면 스트림과 마이크 스트림, 참가자 오디오 스트림을 결합
       const combinedStream = new MediaStream([
         ...screenStream.getVideoTracks(),
         ...screenStream.getAudioTracks(),
         ...audioStream.getAudioTracks(),
+        ...audioTracks,
       ]);
 
       const options = { mimeType: 'video/webm; codecs="vp9, opus"' };
