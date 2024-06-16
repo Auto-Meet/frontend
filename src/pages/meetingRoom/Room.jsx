@@ -367,7 +367,6 @@ const Room = () => {
   };
 
   //전체회의 녹화시작
-  //전체회의 녹화시작
   const startScreenRecording = async () => {
     console.log("전체회의 녹화 시작");
 
@@ -390,12 +389,16 @@ const Room = () => {
         audioTracks.push(...subAudioTracks);
       });
 
-      // 화면 스트림과 마이크 스트림, 참가자 오디오 스트림을 결합
-      const combinedStream = new MediaStream([
-        ...screenStream.getVideoTracks(),
-        ...screenStream.getAudioTracks(),
+      // 모든 오디오 트랙을 단일 MediaStream에 추가
+      const combinedAudioStream = new MediaStream([
         ...audioStream.getAudioTracks(),
         ...audioTracks,
+      ]);
+
+      // 화면 비디오 트랙과 결합된 오디오 트랙을 결합
+      const combinedStream = new MediaStream([
+        ...screenStream.getVideoTracks(),
+        ...combinedAudioStream.getAudioTracks(),
       ]);
 
       const options = { mimeType: 'video/webm; codecs="vp9, opus"' };
