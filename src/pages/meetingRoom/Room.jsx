@@ -249,6 +249,13 @@ const Room = () => {
   // 개인 녹화 및 녹음 종료
   const stopRecording = async () => {
     if (mediaRecorderRef.current) {
+      Swal.fire({
+        text: "회의를 중지합니다.",
+        icon: "success",
+        confirmButtonText: "확인",
+        confirmButtonColor: "#1f316f",
+      });
+
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.onstop = async () => {
         const blob = new Blob(recordedChunksRef.current, {
@@ -421,6 +428,12 @@ const Room = () => {
   //allStopRecord toggle(전체회의 녹화 종료)
   const allStopRecord = () => {
     console.log("전체회의 녹화 종료");
+    Swal.fire({
+      text: "AI 자동 회의록 작성을 중지합니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+      confirmButtonColor: "#1f316f",
+    });
 
     if (allRecorderRef.current) {
       allRecorderRef.current.stop();
