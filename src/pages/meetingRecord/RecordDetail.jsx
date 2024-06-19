@@ -75,6 +75,7 @@ const Content = styled.textarea`
   border-radius: 15px;
 
   width: 45vw;
+  height: 45vh;
   margin-left: 25vw;
   margin-right: 25vw;
   padding-left: 2%;

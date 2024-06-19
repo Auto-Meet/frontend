@@ -97,6 +97,12 @@ const Record = () => {
       });
   }, []);
 
+  const truncateContent = (len, content) => {
+    if (len > 50) {
+      return content.substring(0, 50) + "...";
+    }
+  };
+
   return (
     <>
       <Logo
@@ -134,7 +140,14 @@ const Record = () => {
             </ContentDate>
           </RBox>
 
-          <Content>{value.content}</Content>
+          <Content>
+            Summary 1: 오늘 회의는 새 소프트웨어 개발 프로젝트의 현재 진행
+            상황을 점검하기 위해 모였는데, 현재 로그인 및 회원가입 페이지의 UI는
+            거의 완성되었지만 사용자 입력 검증 부분에서 약간의 버그가
+            발생하였다. Summary 2: 데시보드 화면에서는 사용자 맞춤형 데이터를
+            실시간으로 보여 줄 계획으로 그래프와 차트를 활용할 예정이며 현재
+            디자인 시안은 UXUI팀과 협의 중이며 ...
+          </Content>
         </ContentBox>
       ))}
     </>
